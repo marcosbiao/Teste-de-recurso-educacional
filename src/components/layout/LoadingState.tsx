@@ -7,15 +7,15 @@ import { Code2 } from 'lucide-react';
  */
 export function LoadingState() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="global-state global-state--loading" role="status">
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="mb-4"
+        className="global-state__icon"
       >
-        <Code2 className="w-12 h-12 text-indigo-600" />
+        <Code2 size={42} />
       </motion.div>
-      <p className="text-gray-600 font-medium animate-pulse">Carregando ambiente pedagógico...</p>
+      <p>Carregando ambiente pedagógico...</p>
     </div>
   );
 }

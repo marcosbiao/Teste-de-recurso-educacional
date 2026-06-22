@@ -59,7 +59,8 @@ export const attemptService = {
    */
   subscribeToAllAttempts(
     userId: string, 
-    callback: (attempts: Attempt[]) => void
+    callback: (attempts: Attempt[]) => void,
+    onError?: (error: unknown) => void
   ) {
     const q = firestoreService.getAllUserAttemptsQuery(userId);
 
@@ -68,6 +69,7 @@ export const attemptService = {
       callback(attempts);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, `${APP_CONSTANTS.COLLECTIONS.USER_PROFILES}/${userId}/${APP_CONSTANTS.COLLECTIONS.ATTEMPTS}`);
+      onError?.(error);
     });
   }
 };

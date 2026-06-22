@@ -22,16 +22,16 @@ export class ErrorBoundary extends React.Component<{ children: ReactNode }, { ha
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-red-100">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="global-state">
+          <div className="global-state__card">
+            <div className="global-state__error-icon">
               <AlertCircle size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Ops! Algo deu errado</h1>
-            <p className="text-slate-600 mb-8 leading-relaxed">{this.state.error?.message || "Ocorreu um erro inesperado na interface."}</p>
+            <h1>Ops! Algo deu errado</h1>
+            <p>{this.state.error?.message || "Ocorreu um erro inesperado na interface."}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+              className="global-state__button"
             >
               Recarregar Aplicativo
             </button>

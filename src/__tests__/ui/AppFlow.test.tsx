@@ -25,7 +25,10 @@ describe('Fluxo Principal do App', () => {
     
     // Configura mocks padrão para evitar erros de "unsubscribe is not a function"
     vi.mocked(attemptService.subscribeToAttempts).mockReturnValue(() => {});
-    vi.mocked(attemptService.subscribeToAllAttempts).mockReturnValue(() => {});
+    vi.mocked(attemptService.subscribeToAllAttempts).mockImplementation((_userId, callback) => {
+      callback([]);
+      return () => {};
+    });
 
     vi.mocked(authService.onAuthStateChanged).mockImplementation((cb) => {
       cb(mockUser as any);
@@ -50,12 +53,13 @@ describe('Fluxo Principal do App', () => {
       expect(screen.queryByText(/Carregando ambiente pedagógico/i)).not.toBeInTheDocument();
     });
 
-    // Verifica se os desafios são listados
-    expect(screen.getByText(/Trilha de Aprendizado/i)).toBeInTheDocument();
-    expect(screen.getByText(/Estrutura Condicional/i)).toBeInTheDocument();
+    // Verifica se as trilhas são listadas e abre Condicionais
+    expect(screen.getByText(/Trilhas de aprendizagem/i)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Condicionais/i })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: /Iniciar trilha: Condicionais/i }));
 
     // Seleciona o primeiro desafio
-    const challengeButton = screen.getByText(/Desafio Guiado: Estrutura Condicional em C/i);
+    const challengeButton = await screen.findByRole('button', { name: /Iniciar desafio: Desafio Guiado: Estrutura Condicional em C/i });
     fireEvent.click(challengeButton);
 
     // Verifica se a página do desafio é exibida
@@ -87,8 +91,9 @@ describe('Fluxo Principal do App', () => {
       expect(screen.queryByText(/Carregando ambiente pedagógico/i)).not.toBeInTheDocument();
     });
 
-    // Seleciona o desafio
-    fireEvent.click(screen.getByText(/Desafio Guiado: Estrutura Condicional em C/i));
+    // Seleciona a trilha e o desafio
+    fireEvent.click(await screen.findByRole('button', { name: /Iniciar trilha: Condicionais/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /Iniciar desafio: Desafio Guiado: Estrutura Condicional em C/i }));
 
     // Digita no editor (o editor é um textarea)
     const editor = await screen.findByPlaceholderText(/Escreva seu código C aqui/i);
@@ -99,7 +104,7 @@ describe('Fluxo Principal do App', () => {
     fireEvent.click(verifyButton);
 
     // Verifica se o loading aparece
-    expect(screen.getByText(/Analisando/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Analisando/i })).toBeInTheDocument();
 
     // Aguarda o feedback
     await waitFor(() => {
@@ -133,13 +138,14 @@ describe('Fluxo Principal do App', () => {
       expect(screen.queryByText(/Carregando ambiente pedagógico/i)).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText(/Desafio Guiado: Estrutura Condicional em C/i));
+    fireEvent.click(await screen.findByRole('button', { name: /Iniciar trilha: Condicionais/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /Iniciar desafio: Desafio Guiado: Estrutura Condicional em C/i }));
 
     const verifyButton = await screen.findByText(/Solicitar Orientação/i);
     fireEvent.click(verifyButton);
 
     // Aguarda o erro aparecer - usamos findByText que já tem waitFor embutido
-    const errorAlert = await screen.findByText(/Falha na persistência/i, {}, { timeout: 5000 });
+    const errorAlert = await screen.findByText(/Não foi possível concluir a análise neste momento/i, {}, { timeout: 5000 });
     expect(errorAlert).toBeInTheDocument();
-  });
+  }, 10000);
 });

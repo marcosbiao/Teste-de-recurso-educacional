@@ -142,6 +142,7 @@ export const desafioFuncoesDistanciaEntrePontos: Challenge = {
   ],
 
   solution: `#include <math.h>
+#include <stdio.h>
 
 float calcularDistancia(float x1, float y1, float x2, float y2) {
     float dx, dy, distancia;
@@ -152,6 +153,18 @@ float calcularDistancia(float x1, float y1, float x2, float y2) {
     distancia = sqrt(dx * dx + dy * dy);
 
     return distancia;
+}
+
+int main(void) {
+    float x1, y1, x2, y2, distancia;
+
+    printf("Digite as coordenadas x1, y1, x2 e y2: ");
+    scanf("%f %f %f %f", &x1, &y1, &x2, &y2);
+
+    distancia = calcularDistancia(x1, y1, x2, y2);
+    printf("Distancia: %.2f\\n", distancia);
+
+    return 0;
 }
 
 /* Observação: em alguns compiladores, programas que usam sqrt podem precisar ser compilados
