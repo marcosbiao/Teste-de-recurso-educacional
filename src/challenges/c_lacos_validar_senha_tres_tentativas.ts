@@ -52,7 +52,7 @@ export const desafioLacosValidarSenhaTresTentativas: Challenge = {
 
   examples: [
     { input: '1111\n2222\n1234', output: 'Acesso permitido' },
-    { input: '9999\n8888\n7777', output: 'Acesso blocked' }
+    { input: '9999\n8888\n7777', output: 'Acesso bloqueado' }
   ],
 
   concepts: [

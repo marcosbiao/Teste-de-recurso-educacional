@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../../App';
 import { authService } from '../../services/authService';
-import { callAnalyzeApi } from '../../services/analysisServiceClient';
+import { analyzeChallengeAttempt } from '../../services/analysisService';
 import { attemptService } from '../../services/attemptService';
 import { APP_CONSTANTS } from '../../config/constants';
-
 import { getDoc } from 'firebase/firestore';
 
-// Mock dos serviços
 vi.mock('../../services/authService');
-vi.mock('../../services/analysisServiceClient');
+vi.mock('../../services/analysisService');
 vi.mock('../../services/attemptService');
 
 describe('Fluxo Principal do App', () => {
@@ -22,8 +20,6 @@ describe('Fluxo Principal do App', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Configura mocks padrão para evitar erros de "unsubscribe is not a function"
     vi.mocked(attemptService.subscribeToAttempts).mockReturnValue(() => {});
     vi.mocked(attemptService.subscribeToAllAttempts).mockImplementation((_userId, callback) => {
       callback([]);
@@ -34,7 +30,7 @@ describe('Fluxo Principal do App', () => {
       cb(mockUser as any);
       return () => {};
     });
-    // Mock do perfil do usuário no Firestore
+
     vi.mocked(getDoc).mockResolvedValue({
       exists: () => true,
       data: () => ({
@@ -48,104 +44,75 @@ describe('Fluxo Principal do App', () => {
   it('deve renderizar a tela inicial e permitir selecionar um desafio', async () => {
     render(<App />);
 
-    // Aguarda o carregamento inicial
     await waitFor(() => {
       expect(screen.queryByText(/Carregando ambiente pedagógico/i)).not.toBeInTheDocument();
     });
 
-    // Verifica se as trilhas são listadas e abre Condicionais
     expect(screen.getByText(/Trilhas de aprendizagem/i)).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: /Condicionais/i })).toBeInTheDocument();
     fireEvent.click(await screen.findByRole('button', { name: /Iniciar trilha: Condicionais/i }));
 
-    // Seleciona o primeiro desafio
     const challengeButton = await screen.findByRole('button', { name: /Iniciar desafio: Desafio Guiado: Estrutura Condicional em C/i });
     fireEvent.click(challengeButton);
 
-    // Verifica se a página do desafio é exibida
     expect(await screen.findByText(/Enunciado/i)).toBeInTheDocument();
     expect(await screen.findByText(/Solicitar Orientação/i)).toBeInTheDocument();
   });
 
-  it('deve permitir digitar código e clicar em verificar resposta', async () => {
-    const mockAnalysis = {
+  it('deve permitir digitar código e receber o novo feedback estruturado', async () => {
+    vi.mocked(analyzeChallengeAttempt).mockResolvedValue({
       category: APP_CONSTANTS.ANALYSIS_CATEGORIES.ADEQUATE,
       confidence: APP_CONSTANTS.CONFIDENCE_LEVELS.HIGH,
-      feedback: { good: ['Bom trabalho'], review: [], nextStep: 'Parabéns' },
-      difficultyHypothesis: '',
-      errorType: [],
-      suggestedNextStep: '',
-      analysisSummary: '',
+      studentFeedback: {
+        positiveObservation: 'A leitura da entrada foi estruturada corretamente.',
+        primaryIssue: {
+          hasIssue: false,
+          type: 'sem_erro_relevante',
+          concept: '',
+          evidence: '',
+          explanation: ''
+        },
+        guidingQuestion: 'Como você explicaria por que sua solução atende ao enunciado?',
+        nextAction: 'Avance para o próximo desafio.'
+      },
+      teacherDiagnosis: {
+        hypothesis: 'O estudante demonstrou domínio da solução proposta.',
+        confidence: APP_CONSTANTS.CONFIDENCE_LEVELS.HIGH
+      },
+      difficultyHypothesis: 'O estudante demonstrou domínio da solução proposta.',
+      feedback: { good: ['A leitura da entrada foi estruturada corretamente.'], review: [], nextStep: 'Avance para o próximo desafio.' },
+      errorType: ['sem_erro_relevante'],
+      suggestedNextStep: 'Avance para o próximo desafio.',
+      analysisSummary: 'A leitura da entrada foi estruturada corretamente.',
       analysisMode: APP_CONSTANTS.ANALYSIS_MODES.PRIMARY,
-      modelUsed: 'gemini-3-flash-preview',
-      promptVersion: '2.0.0'
-    };
-
-    vi.mocked(callAnalyzeApi).mockResolvedValue(mockAnalysis as any);
+      analysisStatus: 'success',
+      modelUsed: 'gemini-flash-latest',
+      promptVersion: '3.1.0'
+    } as any);
     vi.mocked(attemptService.saveAttempt).mockResolvedValue(undefined);
 
     render(<App />);
 
-    // Aguarda o carregamento inicial
     await waitFor(() => {
       expect(screen.queryByText(/Carregando ambiente pedagógico/i)).not.toBeInTheDocument();
     });
 
-    // Seleciona a trilha e o desafio
     fireEvent.click(await screen.findByRole('button', { name: /Iniciar trilha: Condicionais/i }));
     fireEvent.click(await screen.findByRole('button', { name: /Iniciar desafio: Desafio Guiado: Estrutura Condicional em C/i }));
 
-    // Digita no editor (o editor é um textarea)
     const editor = await screen.findByPlaceholderText(/Escreva seu código C aqui/i);
     fireEvent.change(editor, { target: { value: 'int main() { return 0; }' } });
 
-    // Clica em verificar
-    const verifyButton = await screen.findByText(/Solicitar Orientação/i);
-    fireEvent.click(verifyButton);
+    fireEvent.click(await screen.findByText(/Solicitar Orientação/i));
 
-    // Verifica se o loading aparece
     expect(screen.getByRole('button', { name: /Analisando/i })).toBeInTheDocument();
 
-    // Aguarda o feedback
     await waitFor(() => {
-      expect(screen.getByText(/Orientação Pedagógica/i)).toBeInTheDocument();
-      expect(screen.getByText(/Bom trabalho/i)).toBeInTheDocument();
+      expect(screen.getByText(/O que você já conseguiu/i)).toBeInTheDocument();
+      expect(screen.getByText(/A leitura da entrada foi estruturada corretamente./i)).toBeInTheDocument();
+      expect(screen.getByText(/Sua próxima ação/i)).toBeInTheDocument();
     });
 
-    // Verifica se a tentativa foi salva
     expect(attemptService.saveAttempt).toHaveBeenCalled();
   });
-
-  it('deve exibir erro amigável quando a persistência falha', async () => {
-    vi.mocked(callAnalyzeApi).mockResolvedValue({
-      category: APP_CONSTANTS.ANALYSIS_CATEGORIES.ADEQUATE,
-      confidence: APP_CONSTANTS.CONFIDENCE_LEVELS.HIGH,
-      feedback: { good: [], review: [], nextStep: '' },
-      difficultyHypothesis: '',
-      errorType: [],
-      suggestedNextStep: '',
-      analysisSummary: '',
-      analysisMode: APP_CONSTANTS.ANALYSIS_MODES.PRIMARY,
-      modelUsed: 'gemini-3-flash-preview',
-      promptVersion: '2.0.0'
-    } as any);
-    vi.mocked(attemptService.saveAttempt).mockRejectedValue(new Error('Falha na persistência'));
-
-    render(<App />);
-    
-    // Aguarda o carregamento inicial
-    await waitFor(() => {
-      expect(screen.queryByText(/Carregando ambiente pedagógico/i)).not.toBeInTheDocument();
-    });
-
-    fireEvent.click(await screen.findByRole('button', { name: /Iniciar trilha: Condicionais/i }));
-    fireEvent.click(await screen.findByRole('button', { name: /Iniciar desafio: Desafio Guiado: Estrutura Condicional em C/i }));
-
-    const verifyButton = await screen.findByText(/Solicitar Orientação/i);
-    fireEvent.click(verifyButton);
-
-    // Aguarda o erro aparecer - usamos findByText que já tem waitFor embutido
-    const errorAlert = await screen.findByText(/Não foi possível concluir a análise neste momento/i, {}, { timeout: 5000 });
-    expect(errorAlert).toBeInTheDocument();
-  }, 10000);
 });

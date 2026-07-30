@@ -30,6 +30,19 @@ export const firestoreService = {
   },
 
   /**
+   * Retorna a referência para o progresso pedagógico de um desafio por usuário.
+   */
+  getUserChallengeProgressDoc(userId: string, challengeId: string, challengeVersion: string): DocumentReference {
+    return doc(
+      db,
+      APP_CONSTANTS.COLLECTIONS.USER_PROFILES,
+      userId,
+      APP_CONSTANTS.COLLECTIONS.CHALLENGE_PROGRESS,
+      `${challengeId}_${challengeVersion}`
+    );
+  },
+
+  /**
    * Retorna a referência para a coleção de sessões.
    */
   getSessionsCollection(): CollectionReference {

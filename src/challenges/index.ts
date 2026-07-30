@@ -1,4 +1,6 @@
 import type { Challenge } from '../types.ts';
+import { desafioCci01CustoViagem } from './c_cci01_custo_viagem.ts';
+import { desafioCci01MateriaisOficina } from './c_cci01_materiais_oficina.ts';
 import { desafio1 } from './c_condicionais_basico.ts';
 import { desafio2 } from './c_condicionais_paridade.ts';
 import { desafio3 } from './c_emprestimo_salario.ts';
@@ -36,6 +38,9 @@ import { desafioFuncoesDistanciaEntrePontos } from './c_funcoes_distancia_entre_
  * Facilita a manutenção e expansão da base pedagógica.
  */
 export const CHALLENGES: Challenge[] = [
+  { ...desafioCci01CustoViagem, categoryId: 'representacao' },
+  { ...desafioCci01MateriaisOficina, categoryId: 'representacao' },
+
   { ...desafio1, categoryId: 'condicionais' },
   { ...desafio2, categoryId: 'condicionais' },
   { ...desafio3, categoryId: 'condicionais' },

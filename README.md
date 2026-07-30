@@ -1,55 +1,25 @@
 # Desafios Guiados
 
-Aplicacao web educacional para praticar desafios de programacao em C com acompanhamento de progresso, verificacao de respostas e feedback sobre as tentativas.
+Aplicação educacional para desafios de programação em C com acompanhamento de progresso e feedback pedagógico.
 
-Este projeto faz parte do meu trabalho de doutorado e ainda esta em execucao. Por isso, sua estrutura, funcionalidades e criterios de avaliacao podem ser ajustados ou modificados ao longo do processo de pesquisa e desenvolvimento.
+## Configuração local
 
-## Requisitos
+1. Instale dependências: `npm install`.
+2. Copie `.env.example` para `.env.local` e defina `VITE_ANALYSIS_API_URL=http://127.0.0.1:8787/api/analyze`.
+3. Copie `cloudflare/.dev.vars.example` para `cloudflare/.dev.vars` e informe o `FIREBASE_PROJECT_ID` e as origens locais permitidas.
+4. Em terminais separados, execute `npm run worker:dev` e `npm run dev`.
 
-- Node.js 20.19+ recomendado
-- npm
+O navegador obtém um Firebase ID token sob demanda e o envia no cabeçalho Authorization. Critérios diagnósticos, prompt e modelo ficam exclusivamente no Worker. O fallback pedagógico local permanece disponível para falhas temporárias do Worker/modelo.
 
-## Configuracao
+## Scripts
 
-1. Instale as dependencias:
+- `npm run lint`, `npm run test:run`, `npm run build`
+- `npm run worker:dev`, `npm run worker:test`, `npm run worker:build`
 
-   ```bash
-   npm install
-   ```
+Consulte [a configuração do Worker](docs/cloudflare-worker-setup.md), [as proteções](docs/cloudflare-security.md) e [a validação do Qwen](docs/qwen-analysis-validation.md). O deploy é manual e não é executado por este repositório.
 
-2. Crie ou atualize o arquivo `.env.local` com as variaveis necessarias para executar o servidor. Exemplo:
+## Estrutura
 
-   ```env
-   GEMINI_API_KEY=sua_chave_aqui
-   ```
-
-## Executando Localmente
-
-Inicie o ambiente de desenvolvimento:
-
-```bash
-npm run dev
-```
-
-Depois, acesse:
-
-```text
-http://localhost:3000/desafio-guiado/
-```
-
-## Scripts Disponiveis
-
-- `npm run dev`: inicia o servidor de desenvolvimento do Vite.
-- `npm run build`: gera a versao de producao.
-- `npm run start`: executa a versao gerada em `dist/`.
-- `npm run lint`: valida os tipos com TypeScript.
-- `npm test`: executa os testes em modo interativo.
-- `npm run test:run`: executa os testes uma unica vez.
-- `npm run test:coverage`: gera relatorio de cobertura.
-
-## Estrutura Geral
-
-- `src/`: codigo-fonte da aplicacao.
-- `server.ts`: servidor usado para rotas e integracoes.
-- `firestore.rules`: regras de seguranca do Firestore.
-- `TESTING.md`: detalhes sobre a estrategia de testes.
+- `src/`: frontend React e fallback local.
+- `cloudflare/`: Worker, autenticação, prompt, catálogo interno e validação.
+- `legacy/express-server/`: referência histórica que não participa do fluxo ativo.

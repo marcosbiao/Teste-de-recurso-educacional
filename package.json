@@ -5,26 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "NODE_ENV=production node dist/server.cjs",
+    "build": "vite build",
+    "start": "vite preview",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "postbuild": "node scripts/check-local-build-safety.mjs",
+    "worker:dev": "npm --prefix cloudflare run dev",
+    "worker:test": "npm --prefix cloudflare run test",
+    "worker:build": "npm --prefix cloudflare run build"
   },
   "dependencies": {
-    "@google/genai": "^1.29.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
-    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
-    "esbuild": "^0.28.0",
-    "express": "^5.2.1",
     "firebase": "^12.11.0",
     "firebase-admin": "^13.7.0",
+    "jose": "^6.2.3",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "prismjs": "^1.30.0",
@@ -35,23 +36,21 @@
     "vite": "^6.2.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
     "@firebase/rules-unit-testing": "^5.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
     "@types/prismjs": "^1.26.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/supertest": "^7.2.0",
     "autoprefixer": "^10.4.21",
     "jsdom": "^29.0.1",
     "msw": "^2.12.14",
-    "supertest": "^7.2.2",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "wrangler": "^4.86.0"
   }
 }

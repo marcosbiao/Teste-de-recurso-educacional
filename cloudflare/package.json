@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --config wrangler.jsonc --port 8787",
+    "test": "../node_modules/.bin/vitest run test",
+    "build": "tsc --noEmit"
+  }
+}

@@ -19,7 +19,7 @@ export function TrailDetailView({ trail, attempts, completedChallengeIds, onBack
       <div className="home-container">
         <button className="detail-back" type="button" onClick={onBack}><ArrowLeft size={18} /> Voltar para trilhas</button>
         <header className="trail-detail__header">
-          <div><span className="eyebrow">{trail.competency} • Trilha de aprendizagem</span><h1>{trail.title}</h1><p>{trail.description}</p></div>
+          <div><span className="eyebrow">{trail.competency} • Trilha de aprendizagem</span><h1>{trail.title}</h1><p>{trail.officialDescription || trail.description}</p></div>
           <div className="trail-detail__summary">
             <strong>{trail.percent}%</strong><span>{trail.completedCount} de {trail.challenges.length} desafios concluídos</span>
             <SegmentedProgress completed={trail.completedCount} total={trail.challenges.length} label={`Progresso em ${trail.title}`} />

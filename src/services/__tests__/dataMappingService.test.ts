@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { dataMappingService } from '../dataMappingService';
 import { APP_CONSTANTS } from '../../config/constants';
 import { Timestamp } from 'firebase/firestore';
@@ -6,8 +6,7 @@ import { Timestamp } from 'firebase/firestore';
 describe('dataMappingService', () => {
   describe('normalizeAttempt', () => {
     it('deve preencher valores padrão para uma tentativa vazia', () => {
-      const emptyData = {};
-      const normalized = dataMappingService.normalizeAttempt(emptyData);
+      const normalized = dataMappingService.normalizeAttempt({});
 
       expect(normalized.id).toBeDefined();
       expect(normalized.userId).toBe('anonymous');
@@ -15,25 +14,31 @@ describe('dataMappingService', () => {
       expect(normalized.category).toBe(APP_CONSTANTS.ANALYSIS_CATEGORIES.INITIAL);
       expect(normalized.confidence).toBe(APP_CONSTANTS.CONFIDENCE_LEVELS.MEDIUM);
       expect(normalized.tipsUsed).toEqual([]);
-      expect(normalized.feedback.good).toEqual([]);
+      expect(normalized.studentFeedback.positiveObservation).toBeTruthy();
     });
 
-    it('deve preservar dados existentes e validar arrays', () => {
-      const partialData = {
+    it('deve converter uma tentativa legada para a nova estrutura', () => {
+      const legacyAttempt = {
         userId: 'user-123',
         challengeId: 'desafio-1',
-        tipsUsed: 'não é um array', // Deve ser corrigido para []
         feedback: {
-          good: ['Bom trabalho']
-        }
+          good: ['Você leu a entrada corretamente.'],
+          review: ['O caso zero não foi tratado.', 'Evidência: a condição numero > 0 é seguida diretamente por else'],
+          nextStep: 'Crie um caso separado para zero.'
+        },
+        difficultyHypothesis: 'O estudante ainda não separou todos os casos.',
+        errorType: ['caso_nao_tratado'],
+        suggestedNextStep: 'Crie um caso separado para zero.'
       };
-      const normalized = dataMappingService.normalizeAttempt(partialData);
 
-      expect(normalized.userId).toBe('user-123');
-      expect(normalized.challengeId).toBe('desafio-1');
-      expect(normalized.tipsUsed).toEqual([]);
-      expect(normalized.feedback.good).toEqual(['Bom trabalho']);
-      expect(normalized.feedback.review).toEqual([]);
+      const normalized = dataMappingService.normalizeAttempt(legacyAttempt);
+
+      expect(normalized.studentFeedback.positiveObservation).toBe('Você leu a entrada corretamente.');
+      expect(normalized.studentFeedback.primaryIssue.hasIssue).toBe(true);
+      expect(normalized.studentFeedback.primaryIssue.type).toBe('caso_nao_tratado');
+      expect(normalized.studentFeedback.primaryIssue.explanation).toBe('O caso zero não foi tratado.');
+      expect(normalized.studentFeedback.primaryIssue.evidence).toContain('numero > 0');
+      expect(normalized.teacherDiagnosis.hypothesis).toContain('ainda não separou');
     });
   });
 
@@ -54,4 +59,10 @@ describe('dataMappingService', () => {
       expect(mapped.id).toBe('doc-id');
     });
   });
+});
+
+
+it('preserva local_fallback e interpreta registros antigos sem origem como unknown', () => {
+  expect(dataMappingService.normalizeAttempt({ analysisMode: 'local_fallback' }).analysisMode).toBe('local_fallback');
+  expect(dataMappingService.normalizeAttempt({}).analysisMode).toBe('unknown');
 });

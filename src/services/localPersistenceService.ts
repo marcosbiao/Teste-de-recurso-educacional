@@ -1,19 +1,44 @@
-import { Attempt } from '../types';
+import { Attempt, SolutionUnlockProgress } from '../types';
 import { dataMappingService } from './dataMappingService';
 
 /**
  * Serviço para persistência local (fallback) quando o usuário não está autenticado ou o Firestore falha.
  */
 export const localPersistenceService = {
-  
+  getSolutionProgressKey(userId: string, challengeId: string, challengeVersion: string): string {
+    return `solution_progress_${userId}_${challengeId}_${challengeVersion}`;
+  },
+
+  saveSolutionProgress(progress: SolutionUnlockProgress): void {
+    const key = this.getSolutionProgressKey(progress.userId, progress.challengeId, progress.challengeVersion);
+    localStorage.setItem(key, JSON.stringify({
+      ...progress,
+      updatedAt: new Date().toISOString(),
+      solutionOpenedAt: progress.solutionOpenedAt instanceof Date ? progress.solutionOpenedAt.toISOString() : progress.solutionOpenedAt
+    }));
+  },
+
+  getSolutionProgress(userId: string, challengeId: string, challengeVersion: string): Partial<SolutionUnlockProgress> | null {
+    const key = this.getSolutionProgressKey(userId, challengeId, challengeVersion);
+    const saved = localStorage.getItem(key);
+    if (!saved) return null;
+
+    try {
+      const parsed = JSON.parse(saved);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (error) {
+      console.error('Erro ao ler progresso de solução no LocalStorage:', error);
+      return null;
+    }
+  },
+
   /**
    * Salva uma tentativa localmente.
    */
   saveAttempt(challengeId: string, attempt: Attempt): void {
     const key = `attempts_${challengeId}`;
     const existing = this.getAttempts(challengeId);
-    
-    // Converte para string ISO para salvar em JSON
+
     const toSave = {
       ...attempt,
       isLocal: true,
@@ -36,7 +61,7 @@ export const localPersistenceService = {
       const parsed = JSON.parse(saved);
       return Array.isArray(parsed) ? parsed.map(a => dataMappingService.mapLocalAttempt(a)) : [];
     } catch (error) {
-      console.error("Erro ao ler LocalStorage:", error);
+      console.error('Erro ao ler LocalStorage:', error);
       return [];
     }
   },
@@ -71,7 +96,7 @@ export const localPersistenceService = {
               parsed.forEach(a => allAttempts.push(dataMappingService.mapLocalAttempt(a)));
             }
           } catch (e) {
-            console.error("Erro ao ler LocalStorage para chave", key, e);
+            console.error('Erro ao ler LocalStorage para chave', key, e);
           }
         }
       }

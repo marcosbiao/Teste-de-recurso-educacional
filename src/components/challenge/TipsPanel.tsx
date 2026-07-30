@@ -8,12 +8,14 @@ interface TipsPanelProps { challenge: Challenge; usedTips: number[]; onUseTip: (
 export function TipsPanel({ challenge, usedTips, onUseTip }: TipsPanelProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const contentId = `tips-content-${challenge.id}`;
+  const openedTipsCount = challenge.tips.filter(tip => usedTips.includes(tip.id)).length;
+  const allTipsOpened = challenge.tips.length === 0 || challenge.tips.every(tip => usedTips.includes(tip.id));
   return (
     <div className="challenge-accordion challenge-accordion--amber">
       <button className="challenge-accordion__trigger" type="button" onClick={() => setIsExpanded(value => !value)} aria-expanded={isExpanded} aria-controls={contentId}>
         <span className="challenge-accordion__icon"><Lightbulb size={25} /></span>
         <span className="challenge-accordion__copy"><strong id="tips-title">Apoio Pedagógico</strong><small>Dicas para destravar seu raciocínio</small></span>
-        <span className="challenge-accordion__dots" aria-label={`${usedTips.length} de ${challenge.tips.length} dicas utilizadas`}>{challenge.tips.map(tip => <i key={tip.id} className={usedTips.includes(tip.id) ? 'is-used' : undefined} />)}</span>
+        <span className="challenge-accordion__dots" aria-label={`${openedTipsCount} de ${challenge.tips.length} dicas utilizadas`}>{challenge.tips.map(tip => <i key={tip.id} className={usedTips.includes(tip.id) ? 'is-used' : undefined} />)}</span>
         <ChevronDown className="challenge-accordion__chevron" size={20} />
       </button>
       <AnimatePresence>{isExpanded && (
@@ -28,7 +30,7 @@ export function TipsPanel({ challenge, usedTips, onUseTip }: TipsPanelProps) {
                 {!isUsed && <button type="button" onClick={() => onUseTip(tip.id)}><Zap size={15} />Revelar dica {index + 1}</button>}
               </article>;
             })}</div>
-            {usedTips.length === challenge.tips.length && <div className="challenge-complete-note"><CheckCircle2 size={19} /><p>Você já utilizou todo o apoio disponível. Confie na sua lógica e envie para análise.</p></div>}
+            {allTipsOpened && <div className="challenge-complete-note"><CheckCircle2 size={19} /><p>Você já utilizou todo o apoio disponível. Confie na sua lógica e envie para análise.</p></div>}
           </div>
         </motion.div>
       )}</AnimatePresence>

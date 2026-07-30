@@ -3,43 +3,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// --- Domínio Pedagógico ---
+import type { AnalysisConfidence, AnalysisMode, AnalysisResult, AnalysisStatus, ChallengeCategory, CriterionAssessment, CriterionStatus, ErrorType, PrimaryIssue, StudentFeedback, TeacherDiagnosis } from './domain/analysis/analysisTypes';
+export type { AnalysisConfidence, AnalysisMode, AnalysisResult, AnalysisStatus, ChallengeCategory, CriterionAssessment, CriterionStatus, ErrorType, PrimaryIssue, StudentFeedback, TeacherDiagnosis } from './domain/analysis/analysisTypes';
 
-export type ChallengeCategory = 
-  | 'tentativa inicial' 
-  | 'parcialmente correta' 
-  | 'quase completa' 
-  | 'solução adequada';
 
-export type AnalysisConfidence = 'baixa' | 'media' | 'alta';
+export interface SolutionUnlockProgress {
+  userId: string;
+  challengeId: string;
+  challengeVersion: string;
+  openedTipIds: number[];
+  aiAnalysisRequestCount: number;
+  solutionUnlocked: boolean;
+  solutionOpenedAt?: Date | string | null | any;
+  updatedAt?: Date | string | null | any;
+}
 
-export type ErrorType = 
-  | 'interpretacao_enunciado'
-  | 'logica'
-  | 'sintaxe_aparente'
-  | 'saida_incorreta'
-  | 'caso_nao_tratado'
-  | 'condicao_incompleta'
-  | 'sem_erro_relevante';
+export interface PedagogicalFeedback {
+  good: string[];
+  review: string[];
+  nextStep: string;
+}
 
-export type AnalysisMode = 'gemini_primary' | 'gemini_fallback';
-
-/**
- * Representa um evento de interação do usuário para fins de pesquisa.
- */
-export type InteractionEventType = 
-  | 'challenge_view'       // Visualizou o enunciado
-  | 'tip_open'             // Abriu uma dica específica
-  | 'editor_first_edit'    // Começou a digitar no editor
-  | 'verify_click'         // Clicou em verificar
-  | 'analysis_success'     // Recebeu feedback da IA
-  | 'analysis_fallback'    // Usou análise local (fallback)
-  | 'analysis_error'       // Erro na chamada da IA
-  | 'solution_view'        // Visualizou a solução comentada
-  | 'common_errors_view'   // Visualizou os erros comuns
-  | 'history_open'         // Abriu o painel de histórico
-  | 'session_start'        // Iniciou uma nova sessão de desafio
-  | 'session_end';         // Encerrou a sessão (ex: ao sair da página)
+export type InteractionEventType =
+  | 'challenge_view' | 'tip_open' | 'tip_opened' | 'editor_first_edit' | 'verify_click'
+  | 'ai_analysis_requested' | 'analysis_success' | 'analysis_fallback' | 'analysis_error'
+  | 'analysis_configuration_error' | 'solution_view' | 'solution_unlocked' | 'solution_opened'
+  | 'history_open' | 'session_start' | 'session_end';
 
 export interface InteractionEvent {
   id: string;
@@ -51,9 +40,6 @@ export interface InteractionEvent {
   metadata?: Record<string, string | number | boolean | null | undefined>;
 }
 
-/**
- * Representa uma sessão de uso contínuo de um desafio.
- */
 export interface ChallengeSession {
   id: string;
   userId: string;
@@ -61,7 +47,6 @@ export interface ChallengeSession {
   startTime: Date | any;
   endTime?: Date | any;
   lastActivity: Date | any;
-  
   metrics: {
     verificationCount: number;
     tipsOpenedCount: number;
@@ -72,41 +57,32 @@ export interface ChallengeSession {
   };
 }
 
-export interface PedagogicalFeedback {
-  good: string[];
-  review: string[];
-  nextStep: string;
+export interface PreviousPrimaryIssueSummary {
+  type: ErrorType;
+  concept: string;
+  explanation: string;
 }
 
-export interface AnalysisResult {
-  category: ChallengeCategory;
-  confidence: AnalysisConfidence;
-  difficultyHypothesis: string;
-  feedback: PedagogicalFeedback;
-  errorType: ErrorType[];
-  suggestedNextStep: string;
-  analysisSummary: string;
-  analysisMode: AnalysisMode;
-  modelUsed: string;
-  promptVersion: string;
+export interface PreviousAttemptContext {
+  attemptNumber: number;
+  previousCategory?: ChallengeCategory;
+  previousPrimaryIssue?: PreviousPrimaryIssueSummary;
+  previousGuidingQuestion?: string;
+  previousNextAction?: string;
+  codeChanged: boolean;
+  openedTipIds: number[];
 }
 
 export interface Tip {
   id: number;
   text: string;
-  pedagogicalGoal?: string; // O que esta dica tenta destravar
+  pedagogicalGoal?: string;
 }
 
 export interface CommonError {
   title: string;
   description: string;
-  pedagogicalAdvice: string; // Como o aluno deve pensar para evitar este erro
-}
-
-export interface ExpectedSolutionCriteria {
-  id: string;
-  description: string;
-  importance: 'essencial' | 'desejável';
+  pedagogicalAdvice: string;
 }
 
 export interface ErrorPattern {
@@ -115,20 +91,26 @@ export interface ErrorPattern {
   likelyCause: string;
 }
 
-export interface ChallengeOrientation {
-  input: string;
-  output: string;
-  cases: string;
-  structure: string;
-  expectedLogic: string; // Descrição da lógica esperada
+export interface ExpectedSolutionCriteria {
+  id: string;
+  description: string;
+  importance: 'essencial' | 'desejável';
 }
 
 export interface PedagogicalMetadata {
   learningObjective: string;
   pedagogicalGoal: string;
   expectedDifficulty: 'baixa' | 'media' | 'alta';
-  cognitiveOperation: 'lembrar' | 'entender' | 'aplicar' | 'analisar' | 'avaliar' | 'criar';
+  cognitiveOperation: string;
   prerequisites: string[];
+}
+
+export interface ChallengeOrientation {
+  input: string;
+  output: string;
+  cases: string;
+  structure: string;
+  expectedLogic: string;
 }
 
 export interface DomainTags {
@@ -154,44 +136,45 @@ export interface ChallengeExample {
   description?: string;
 }
 
+export interface ProblemRepresentation {
+  inputs: string[];
+  processing: string[];
+  outputs: string[];
+  steps: string[];
+}
+
+export interface ProblemRepresentationDraft {
+  inputs: string;
+  processing: string;
+  outputs: string;
+  steps: string;
+}
+
 export interface Challenge {
   id: string;
   categoryId?: string;
   title: string;
   subtitle: string;
   challengeVersion: string;
-  
-  // Estrutura Pedagógica
   metadata: ChallengeMetadata;
   pedagogicalMetadata: PedagogicalMetadata;
   domainTags: DomainTags;
-  
-  // Conteúdo do Desafio
-  problem: string; // Enunciado
-  guidingQuestions: string[]; // Perguntas Orientadoras
-  orientation: ChallengeOrientation; // Orientações
-  examples: ChallengeExample[]; // Exemplos de Entrada/Saída
-  concepts: string[]; // Conceitos Centrais
-  
-  // Apoios Pedagógicos
+  problem: string;
+  guidingQuestions: string[];
+  orientation: ChallengeOrientation;
+  problemRepresentation?: ProblemRepresentation;
+  examples: ChallengeExample[];
+  concepts: string[];
   tips: Tip[];
   commonErrors: CommonError[];
-  
-  // Solução e Fechamento
-  solution: string; // Solução Comentada
-  finalSummary: string[]; // Resumo Final
-  nextChallengeId?: string; // Próximo Desafio Sugerido
-  
-  // Critérios de Análise
+  solution: string;
+  finalSummary: string[];
+  nextChallengeId?: string;
   expectedCriteria: ExpectedSolutionCriteria[];
   probableErrors: ErrorPattern[];
-  
   templateCode: string;
-  // Fallback local caso a IA falhe
-  analyzeLocally: (code: string) => AnalysisResult;
+  analyzeLocally: (code: string, representation?: ProblemRepresentationDraft) => AnalysisResult;
 }
-
-// --- Dados do Usuário e Progresso ---
 
 export interface UserProfile {
   uid: string;
@@ -199,7 +182,7 @@ export interface UserProfile {
   displayName: string | null;
   photoURL: string | null;
   role: 'admin' | 'student';
-  createdAt: any; // Firestore Timestamp ou Date
+  createdAt: any;
 }
 
 export interface Attempt {
@@ -207,43 +190,42 @@ export interface Attempt {
   userId: string;
   challengeId: string;
   challengeVersion: string;
-  sessionId: string; // Vínculo com a sessão de uso
-  timestamp: any; // Firestore Timestamp (Hora da submissão)
-  
-  // Dados da Submissão
+  sessionId: string;
+  timestamp: any;
   code: string;
-  tipsUsed: number[]; // IDs das dicas abertas ATÉ este momento
-  
-  // Resultado da Análise (Inferência da IA)
+  tipsUsed: number[];
   category: ChallengeCategory;
   confidence: AnalysisConfidence;
-  difficultyHypothesis: string; // Hipótese gerada pela IA sobre a dificuldade do aluno
+  studentFeedback: StudentFeedback;
+  teacherDiagnosis: TeacherDiagnosis;
+  criteriaAssessment?: CriterionAssessment[];
+  difficultyHypothesis: string;
   feedback: PedagogicalFeedback;
   errorType: ErrorType[];
   suggestedNextStep: string;
-  analysisSummary: string; // Síntese da análise para rastreabilidade
-  
-  // Metadados Técnicos da Análise (Rastreabilidade de Sistema)
+  analysisSummary: string;
   analysisMode: AnalysisMode;
+  analysisStatus?: AnalysisStatus;
   modelUsed: string;
   promptVersion: string;
-  
-  // Variáveis de Processo no momento da tentativa
+  analysisRequestId?: string;
+  analysisDurationMs?: number;
+  modelCalls?: number;
+  retryAfterSeconds?: number;
   processMetrics: {
-    timeSinceSessionStart: number; // segundos
-    verificationIndex: number;     // qual o número desta verificação na sessão
+    timeSinceSessionStart: number;
+    verificationIndex: number;
     tipsCountAtSubmission: number;
   };
-  
   isLocal?: boolean;
 }
-
-// --- Contratos de API ---
 
 export interface AnalysisRequest {
   code: string;
   challengeId: string;
   userId: string | null;
+  problemRepresentation?: ProblemRepresentationDraft;
+  previousAttemptContext?: PreviousAttemptContext;
 }
 
 export interface AnalysisError {
@@ -251,8 +233,6 @@ export interface AnalysisError {
   errorCode: string;
   message: string;
 }
-
-// --- Exportação e Relatórios ---
 
 export interface ExportMetadata {
   exportedAt: string;
@@ -268,11 +248,6 @@ export interface JsonExport {
   attempts: Attempt[];
 }
 
-// --- Estados de UI e Aplicação ---
-
-/**
- * Representa o estado de uma operação assíncrona.
- */
 export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export interface AsyncState<T = null> {
@@ -283,6 +258,8 @@ export interface AsyncState<T = null> {
 
 export interface AuthState {
   user: UserProfile | null;
+  isAuthenticated: boolean;
+  isAnonymous: boolean;
   isAuthReady: boolean;
   loading: boolean;
   error: string | null;
@@ -293,8 +270,6 @@ export interface AuthState {
 export interface ChallengeUIState {
   isAnalyzing: boolean;
   showSolution: boolean;
-  showErrors: boolean;
-  showOrientation: boolean;
   lastAnalysisTime: number;
   error: string | null;
 }

@@ -8,6 +8,7 @@ import { Attempt } from '../types';
 import { dataMappingService } from './dataMappingService';
 import { firestoreService } from './firestoreService';
 import { APP_CONSTANTS } from '../config/constants';
+import { ANALYSIS_LIMITS } from '../domain/analysis/analysisLimits';
 
 /**
  * Serviço para gerenciamento de tentativas no Firestore.
@@ -20,7 +21,7 @@ export const attemptService = {
   async saveAttempt(userId: string, attempt: Attempt): Promise<void> {
     try {
       // Validação básica antes de enviar
-      if (!attempt.code || attempt.code.length > 50000) {
+      if (!attempt.code || attempt.code.length > ANALYSIS_LIMITS.maxCodeLength) {
         throw new Error("Código inválido ou muito longo.");
       }
       

@@ -1,14 +1,7 @@
 import { Attempt } from '../types';
 import { timeUtils } from './timeUtils';
 
-/**
- * Mapeadores para transformar tentativas em diferentes formatos de exportação.
- */
 export const attemptMappers = {
-  
-  /**
-   * Mapeia uma tentativa para um formato JSON limpo e normalizado para exportação.
-   */
   mapToJson(attempt: Attempt): any {
     return {
       id: attempt.id,
@@ -20,6 +13,9 @@ export const attemptMappers = {
       code: attempt.code,
       category: attempt.category,
       confidence: attempt.confidence || 'media',
+      studentFeedback: attempt.studentFeedback,
+      criteriaAssessment: attempt.criteriaAssessment,
+      teacherDiagnosis: attempt.teacherDiagnosis,
       difficultyHypothesis: attempt.difficultyHypothesis || '',
       feedback: {
         good: attempt.feedback?.good || [],
@@ -28,6 +24,7 @@ export const attemptMappers = {
       },
       analysisSummary: attempt.analysisSummary || '',
       errorType: attempt.errorType || [],
+      suggestedNextStep: attempt.suggestedNextStep || '',
       analysisMode: attempt.analysisMode || 'unknown',
       modelUsed: attempt.modelUsed || 'unknown',
       promptVersion: attempt.promptVersion || '1.0.0',
@@ -40,12 +37,10 @@ export const attemptMappers = {
     };
   },
 
-  /**
-   * Mapeia uma tentativa para um array de campos CSV.
-   */
   mapToCsvFields(attempt: Attempt): any[] {
     const feedback = attempt.feedback || { good: [], review: [], nextStep: '' };
-    
+    const primaryIssue = attempt.studentFeedback?.primaryIssue;
+
     return [
       attempt.id,
       attempt.userId,
@@ -63,6 +58,10 @@ export const attemptMappers = {
       String(attempt.processMetrics?.timeSinceSessionStart || 0),
       String(attempt.processMetrics?.verificationIndex || 0),
       (attempt.errorType || []).join('; '),
+      primaryIssue?.concept || '',
+      primaryIssue?.evidence || '',
+      attempt.studentFeedback?.guidingQuestion || '',
+      attempt.studentFeedback?.nextAction || '',
       attempt.analysisSummary || '',
       attempt.code,
       (feedback.good || []).join('; '),
@@ -71,9 +70,6 @@ export const attemptMappers = {
     ];
   },
 
-  /**
-   * Retorna os nomes das colunas para o cabeçalho do CSV.
-   */
   getCsvHeaderFields(): string[] {
     return [
       'attempt_id',
@@ -92,6 +88,10 @@ export const attemptMappers = {
       'time_since_start_sec',
       'verification_index',
       'error_type',
+      'primary_issue_concept',
+      'primary_issue_evidence',
+      'guiding_question',
+      'next_action',
       'analysis_summary',
       'code',
       'feedback_good',

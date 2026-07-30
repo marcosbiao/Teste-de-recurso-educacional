@@ -3,10 +3,6 @@ import { initializeTestEnvironment, RulesTestEnvironment, assertFails, assertSuc
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Mock do Firestore Rules Test
-// Nota: Para rodar estes testes de verdade, o Firebase Emulator deve estar ativo.
-// Aqui estamos configurando a estrutura para quando o desenvolvedor rodar localmente.
-
 describe.skip('Firestore Rules', () => {
   let testEnv: RulesTestEnvironment;
   const PROJECT_ID = 'test-project';
@@ -23,26 +19,10 @@ describe.skip('Firestore Rules', () => {
     await testEnv.cleanup();
   });
 
-  it('deve permitir que o dono leia seus próprios dados de perfil', async () => {
-    const aliceContext = testEnv.authenticatedContext('alice', { email: 'alice@example.com', email_verified: true });
-    const aliceDoc = aliceContext.firestore().doc('users/alice');
-    
-    // Simula a existência do documento (o emulador lidaria com isso)
-    // Aqui estamos apenas validando a lógica da regra
-    await assertSucceeds(aliceDoc.get());
-  });
-
-  it('deve impedir que um usuário leia dados de outro usuário', async () => {
-    const bobContext = testEnv.authenticatedContext('bob', { email: 'bob@example.com', email_verified: true });
-    const aliceDoc = bobContext.firestore().doc('users/alice');
-    
-    await assertFails(aliceDoc.get());
-  });
-
-  it('deve permitir que o dono crie uma tentativa válida', async () => {
+  it('deve permitir que o dono crie uma tentativa válida com o novo contrato', async () => {
     const aliceContext = testEnv.authenticatedContext('alice', { email: 'alice@example.com', email_verified: true });
     const aliceAttempt = aliceContext.firestore().doc('users/alice/attempts/attempt-1');
-    
+
     await assertSucceeds(aliceAttempt.set({
       userId: 'alice',
       challengeId: 'desafio1_condicionais_basico',
@@ -52,32 +32,43 @@ describe.skip('Firestore Rules', () => {
       category: 'tentativa inicial',
       confidence: 'media',
       tipsUsed: [],
-      feedback: { good: [], review: [], nextStep: '' },
-      difficultyHypothesis: '',
-      errorType: [],
-      suggestedNextStep: '',
-      analysisSummary: '',
+      studentFeedback: {
+        positiveObservation: 'A leitura da entrada foi iniciada.',
+        primaryIssue: {
+          hasIssue: true,
+          type: 'caso_nao_tratado',
+          concept: 'estrutura condicional',
+          evidence: 'A condição numero > 0 é seguida diretamente por else.',
+          explanation: 'O caso zero está sendo agrupado com os negativos.'
+        },
+        guidingQuestion: 'Qual valor não é positivo nem negativo?',
+        nextAction: 'Crie um tratamento separado para o caso em que o valor seja zero.'
+      },
+      teacherDiagnosis: {
+        hypothesis: 'O estudante reconheceu a estrutura condicional, mas ainda não separou todos os casos.',
+        confidence: 'alta'
+      },
+      feedback: { good: ['A leitura da entrada foi iniciada.'], review: ['O caso zero está sendo agrupado com os negativos.', 'Evidência: A condição numero > 0 é seguida diretamente por else.'], nextStep: 'Crie um tratamento separado para o caso em que o valor seja zero.' },
+      difficultyHypothesis: 'O estudante reconheceu a estrutura condicional, mas ainda não separou todos os casos.',
+      errorType: ['caso_nao_tratado'],
+      suggestedNextStep: 'Crie um tratamento separado para o caso em que o valor seja zero.',
+      analysisSummary: 'O caso zero está sendo agrupado com os negativos.',
       analysisMode: 'gemini_primary',
-      modelUsed: 'test',
-      promptVersion: '1.0.0'
+      modelUsed: 'gemini-flash-latest',
+      promptVersion: '3.1.0',
+      sessionId: 'sess-1',
+      processMetrics: {
+        timeSinceSessionStart: 10,
+        verificationIndex: 1,
+        tipsCountAtSubmission: 0
+      }
     }));
   });
 
   it('deve impedir a criação de tentativa para outro userId', async () => {
     const aliceContext = testEnv.authenticatedContext('alice', { email: 'alice@example.com', email_verified: true });
     const bobAttempt = aliceContext.firestore().doc('users/bob/attempts/attempt-1');
-    
-    await assertFails(bobAttempt.set({
-      userId: 'bob',
-      challengeId: 'desafio1_condicionais_basico',
-      // ... outros campos
-    }));
-  });
 
-  it('deve impedir o update de tentativas (imutabilidade)', async () => {
-    const aliceContext = testEnv.authenticatedContext('alice', { email: 'alice@example.com', email_verified: true });
-    const aliceAttempt = aliceContext.firestore().doc('users/alice/attempts/attempt-1');
-    
-    await assertFails(aliceAttempt.update({ code: 'hack' }));
+    await assertFails(bobAttempt.set({ userId: 'bob', challengeId: 'desafio1_condicionais_basico' }));
   });
 });

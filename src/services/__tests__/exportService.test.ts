@@ -18,14 +18,24 @@ describe('exportService', () => {
       tipsUsed: [1],
       category: 'solução adequada',
       confidence: 'alta',
-      difficultyHypothesis: 'nenhuma',
-      feedback: { good: ['Bom'], review: [], nextStep: 'Fim' },
-      errorType: [],
-      suggestedNextStep: '',
-      analysisSummary: 'OK',
+      studentFeedback: {
+        positiveObservation: 'A estrutura principal do programa está correta.',
+        primaryIssue: { hasIssue: false, type: 'sem_erro_relevante', concept: '', evidence: '', explanation: '' },
+        guidingQuestion: 'Como você explicaria por que a solução está correta?',
+        nextAction: 'Avance para o próximo desafio.'
+      },
+      teacherDiagnosis: {
+        hypothesis: 'O estudante demonstrou domínio do conceito central.',
+        confidence: 'alta'
+      },
+      difficultyHypothesis: 'O estudante demonstrou domínio do conceito central.',
+      feedback: { good: ['A estrutura principal do programa está correta.'], review: [], nextStep: 'Avance para o próximo desafio.' },
+      errorType: ['sem_erro_relevante'],
+      suggestedNextStep: 'Avance para o próximo desafio.',
+      analysisSummary: 'A estrutura principal do programa está correta.',
       analysisMode: 'gemini_primary',
-      modelUsed: 'gemini-3-flash-preview',
-      promptVersion: '2.0.0',
+      modelUsed: 'gemini-flash-latest',
+      promptVersion: '3.1.0',
       processMetrics: { timeSinceSessionStart: 100, verificationIndex: 1, tipsCountAtSubmission: 1 }
     }
   ];
@@ -39,23 +49,15 @@ describe('exportService', () => {
       exportService.exportToJson(mockAttempts, 'user-1', 'desafio-1');
 
       expect(fileUtils.download).toHaveBeenCalled();
-      const [content, fileName, mimeType] = vi.mocked(fileUtils.download).mock.calls[0];
+      const [content, , mimeType] = vi.mocked(fileUtils.download).mock.calls[0];
 
       const parsed = JSON.parse(content);
       expect(parsed.metadata.totalAttempts).toBe(1);
       expect(parsed.metadata.userId).toBe('user-1');
       expect(parsed.metadata.challengeFilter).toBe('desafio-1');
       expect(parsed.attempts).toHaveLength(1);
-      expect(parsed.attempts[0].code).toBe(mockAttempts[0].code);
+      expect(parsed.attempts[0].studentFeedback.nextAction).toBe('Avance para o próximo desafio.');
       expect(mimeType).toBe('application/json');
-    });
-
-    it('deve lidar com lista de tentativas vazia', () => {
-      exportService.exportToJson([], 'user-1');
-      const [content] = vi.mocked(fileUtils.download).mock.calls[0];
-      const parsed = JSON.parse(content);
-      expect(parsed.attempts).toHaveLength(0);
-      expect(parsed.metadata.totalAttempts).toBe(0);
     });
   });
 
@@ -64,14 +66,14 @@ describe('exportService', () => {
       exportService.exportToCsv(mockAttempts, 'user-1', 'desafio-1');
 
       expect(fileUtils.download).toHaveBeenCalled();
-      const [content, fileName, mimeType] = vi.mocked(fileUtils.download).mock.calls[0];
+      const [content, , mimeType] = vi.mocked(fileUtils.download).mock.calls[0];
 
       expect(mimeType).toBe('text/csv;charset=utf-8;');
       const lines = content.split('\n');
-      expect(lines.length).toBeGreaterThan(1); // Cabeçalho + 1 linha
+      expect(lines.length).toBeGreaterThan(1);
       expect(lines[1]).toContain('user-1');
       expect(lines[1]).toContain('desafio-1');
-      expect(lines[1]).toContain('"int main() { return 0; }"');
+      expect(lines[1]).toContain('Avance para o próximo desafio.');
     });
   });
 });

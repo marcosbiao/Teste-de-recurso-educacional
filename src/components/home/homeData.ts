@@ -1,6 +1,6 @@
 import type { Challenge } from '../../types';
 
-export type TrailId = 'condicionais' | 'lacos' | 'vetores' | 'matrizes' | 'funcoes';
+export type TrailId = 'representacao' | 'condicionais' | 'lacos' | 'vetores' | 'matrizes' | 'funcoes';
 export type TrailStatus = 'not-started' | 'in-progress' | 'completed';
 
 export interface TrailDefinition {
@@ -9,6 +9,8 @@ export interface TrailDefinition {
   shortTitle: string;
   description: string;
   competency: string;
+  officialDescription?: string;
+  concepts?: string[];
 }
 
 export interface TrailProgress extends TrailDefinition {
@@ -20,6 +22,21 @@ export interface TrailProgress extends TrailDefinition {
 }
 
 export const TRAILS: TrailDefinition[] = [
+  {
+    id: 'representacao',
+    title: 'Representação de problemas',
+    shortTitle: 'Representação',
+    description: 'Interprete o problema, identifique entradas, processamento e saídas e organize uma solução algorítmica clara antes de programar.',
+    competency: 'CCI01',
+    officialDescription: 'CCI01. Representar problemas introdutórios por meio de soluções algorítmicas claras',
+    concepts: [
+      'Interpretação',
+      'Entrada, processamento e saída',
+      'Decomposição',
+      'Sequência lógica',
+      'Representação algorítmica'
+    ]
+  },
   {
     id: 'condicionais',
     title: 'Condicionais',
@@ -46,14 +63,14 @@ export const TRAILS: TrailDefinition[] = [
     title: 'Matrizes',
     shortTitle: 'Matrizes',
     description: 'Explore dados em linhas e colunas, percursos aninhados e operações.',
-    competency: 'CCI07'
+    competency: 'CCI06'
   },
   {
     id: 'funcoes',
     title: 'Funções e procedimentos',
     shortTitle: 'Funções',
     description: 'Entenda modularização, parâmetros, retorno e chamadas de subprogramas.',
-    competency: 'CCI08'
+    competency: 'CCI07'
   }
 ];
 

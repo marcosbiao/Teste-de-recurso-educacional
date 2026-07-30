@@ -45,13 +45,13 @@ export const desafioMatrizesContarPares: Challenge = {
   orientation: {
     input: '9 números inteiros separados por espaços ou quebras de linhas.',
     output: 'A quantidade total de elementos que atendem à regra de paridade contidos em toda a matriz.',
-    cases: 'Se as entradas forem: 1 2 3, 4 5 6, 7 8 10; os pares são 2, 4, 6 e 10, produzindo o total 4.',
+    cases: 'Se as entradas forem: 1 2 3, 4 5 6, 7 8 10; os pares são 2, 4, 6, 8 e 10, produzindo o total 5.',
     structure: 'Declaração de matriz 3x3. Loops duplos aninhados para preenchimento. Inicialização de contador pares = 0. Segundo loop duplo aninhado de varredura (ou computado dentro do primeiro) aplicando if (matriz[i][j] % 2 == 0) pares++. Printf isolado pós-laço.',
     expectedLogic: 'Criar int m[3][3], i, j, pares = 0. Rodar loop duplo recolhendo dados em &m[i][j]. Avaliar if (m[i][j] % 2 == 0) pares++. Printar pares.'
   },
 
   examples: [
-    { input: '1 2 3 4 5 6 7 8 10', output: 'Total de pares: 4' },
+    { input: '1 2 3 4 5 6 7 8 10', output: 'Total de pares: 5' },
     { input: '1 3 5 7 9 11 13 15 17', output: 'Total de pares: 0' }
   ],
 

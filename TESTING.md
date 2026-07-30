@@ -21,7 +21,7 @@ Os testes estão organizados por responsabilidade:
 - `src/__tests__/ui/`: Testes de interface (React Testing Library) para fluxos de usuário.
 - `src/__tests__/firestore/`: Testes para as regras de segurança do Firestore.
 - `src/__tests__/pedagogical/`: Testes para validar o conteúdo dos desafios e lógica pedagógica.
-- `src/server/__tests__/`: Testes para a camada de backend (Validators, API Integration).
+- `legacy/express-server/src/__tests__/`: testes preservados apenas como referência da arquitetura Express inativa.
 
 ## 3. Cobertura Atual
 

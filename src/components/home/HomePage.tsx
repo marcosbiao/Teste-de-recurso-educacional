@@ -217,5 +217,5 @@ function ProgressSkeleton() {
 }
 
 function TrailGridSkeleton() {
-  return <div className="trails-grid skeleton-grid" aria-label="Carregando trilhas">{Array.from({ length: 5 }, (_, index) => <div className="trail-card" key={index}><span /><span /><span /></div>)}</div>;
+  return <div className="trails-grid skeleton-grid" aria-label="Carregando trilhas">{Array.from({ length: 6 }, (_, index) => <div className="trail-card" key={index}><span /><span /><span /></div>)}</div>;
 }

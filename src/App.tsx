@@ -22,7 +22,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
  */
 export default function App() {
   // 1. Estado Global de Autenticação via Hook
-  const { user, isAuthReady, loading, login, logout } = useAuthState();
+  const { user, isAuthenticated, isAnonymous, isAuthReady, loading, login, logout } = useAuthState();
   const {
     route,
     navigateToGuided,
@@ -167,6 +167,8 @@ export default function App() {
               challenge={CHALLENGES[currentChallengeIndex!]} 
               user={user} 
               isAuthReady={isAuthReady}
+              isAuthenticated={isAuthenticated}
+              isAnonymous={isAnonymous}
               onBack={handleBackToHome} 
               onOpenWorkshop={handleOpenWorkshop}
               onLogin={login}

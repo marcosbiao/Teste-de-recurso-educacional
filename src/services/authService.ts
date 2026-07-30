@@ -3,6 +3,7 @@ import {
   signOut, 
   onAuthStateChanged, 
   getIdTokenResult,
+  signInAnonymously,
   User as FirebaseUser
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
@@ -27,6 +28,10 @@ export const authService = {
   /**
    * Realiza logout do usuário.
    */
+  async signInAnonymously() {
+    return signInAnonymously(auth);
+  },
+
   async logout() {
     try {
       await signOut(auth);

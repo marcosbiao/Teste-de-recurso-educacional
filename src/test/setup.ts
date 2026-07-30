@@ -106,30 +106,6 @@ vi.mock('firebase/auth', () => ({
   GoogleAuthProvider: vi.fn(),
 }));
 
-// Mock do Google GenAI
-vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn().mockImplementation(() => ({
-    models: {
-      generateContent: vi.fn(),
-      generateContentStream: vi.fn(),
-    },
-    chats: {
-      create: vi.fn(() => ({
-        sendMessage: vi.fn(),
-        sendMessageStream: vi.fn(),
-      })),
-    },
-  })),
-  Type: {
-    OBJECT: 'OBJECT',
-    ARRAY: 'ARRAY',
-    STRING: 'STRING',
-    NUMBER: 'NUMBER',
-    BOOLEAN: 'BOOLEAN',
-  },
-}));
-
-// Mock do window.aistudio
 if (typeof window !== 'undefined') {
   (window as any).aistudio = {
     hasSelectedApiKey: vi.fn().mockResolvedValue(true),

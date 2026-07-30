@@ -34,8 +34,6 @@ jobs:
 
       - name: Gerar build
         run: npm run build
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5

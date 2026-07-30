@@ -44,10 +44,10 @@ export const desafioVetoresMaioresQueDez: Challenge = {
 
   orientation: {
     input: '8 números inteiros digitados separadamente no teclado.',
-    output: 'Uma lista com os números que ultrapassam 10, mostrados individualmente.',
-    cases: 'Se as entradas forem: 15, 3, 9, 21, 10, 8, 45, 0; os mostrados devem ser: 15, 21 e 45.',
-    structure: 'Instanciação de um vetor int de tamanho 8. Um primeiro laço for de 0 a 7 lendo os dados. Um segundo laço de 0 a 7 com a condicional if (vetor[i] > 10) disparando printf com o elemento.',
-    expectedLogic: 'Declarar int vetor[8], i. Executar loop de 0 a 7 recolhendo entradas dinâmicas em &vetor[i]. Implementar novo loop (ou aproveitar o mesmo) avaliando if (vetor[i] > 10) e exibindo os dados aprovados.'
+    output: 'Uma lista com os números que ultrapassam 10, mostrados individualmente, ou "Nenhum" se não houver valores aprovados.',
+    cases: 'Se as entradas forem: 15, 3, 9, 21, 10, 8, 45, 0; os mostrados devem ser: 15, 21 e 45. Se as entradas forem 1, 2, 3, 4, 5, 6, 7, 8; o programa deve mostrar "Nenhum".',
+    structure: 'Instanciação de um vetor int de tamanho 8. Um primeiro laço for de 0 a 7 lendo os dados. Um segundo laço de 0 a 7 com a condicional if (vetor[i] > 10) disparando printf com o elemento e atualizando uma variável de controle.',
+    expectedLogic: 'Declarar int vetor[8], i e encontrou = 0. Executar loop de 0 a 7 recolhendo entradas dinâmicas em &vetor[i]. Implementar novo loop (ou aproveitar o mesmo) avaliando if (vetor[i] > 10), exibindo os dados aprovados e marcando encontrou = 1. Ao final, se encontrou continuar 0, imprimir "Nenhum".'
   },
 
   examples: [
@@ -75,11 +75,11 @@ export const desafioVetoresMaioresQueDez: Challenge = {
     { 
       id: 3, 
       text: "Após preencher, faça uma varredura (outroloop ou na mesma etapa). Em cada passo, verifique se a célula atual é maior que 10: 'if (vetor[i] > 10)'.",
-      pedagogicalGoal: "Aplicar condições de filtragem em elementos de matrizes."
+      pedagogicalGoal: "Aplicar condições de filtragem em elementos de vetores."
     },
     { 
       id: 4, 
-      text: "Se a comparação do seu 'if' for verdadeira, execute o printf mostrando o valor daquele índice específico: 'printf(\"%d\\n\", vetor[i]);'.",
+      text: "Se a comparação do seu 'if' for verdadeira, execute o printf mostrando o valor daquele índice específico e marque que algum número foi encontrado.",
       pedagogicalGoal: "Coordenar exibições indexadas em C."
     }
   ],
@@ -104,6 +104,11 @@ export const desafioVetoresMaioresQueDez: Challenge = {
       title: "Criar variáveis estáticas para cada leitura", 
       description: "Criar 8 variáveis avulsas int a,b,c... e não carregar no vetor viola o propósito didático do treinamento de arrays homogêneos.",
       pedagogicalAdvice: "Adote a disciplina de arranjos descrita para organizar em bloco homogêneo os fluxos volumosos."
+    },
+    {
+      title: "Não tratar o caso sem resultados",
+      description: "Quando nenhum elemento é maior que 10, deixar o programa sem saída contradiz a saída esperada.",
+      pedagogicalAdvice: "Use uma variável de controle iniciada em 0 e imprima 'Nenhum' ao final se nenhum valor tiver passado pelo filtro."
     }
   ],
 
@@ -111,7 +116,7 @@ export const desafioVetoresMaioresQueDez: Challenge = {
 
 int main() {
     int vetor[8];
-    int i;
+    int i, encontrou = 0;
 
     // Leitura dos 8 números inteiros
     for (i = 0; i < 8; i++) {
@@ -122,7 +127,12 @@ int main() {
     for (i = 0; i < 8; i++) {
         if (vetor[i] > 10) {
             printf("%d\\n", vetor[i]);
+            encontrou = 1;
         }
+    }
+
+    if (encontrou == 0) {
+        printf("Nenhum\\n");
     }
 
     return 0;
@@ -141,13 +151,15 @@ int main() {
     { id: 'crit2', description: 'Laço coletando os números de 0 até 7', importance: 'essencial' },
     { id: 'crit3', description: 'Uso de condicional testando se vetor[i] > 10', importance: 'essencial' },
     { id: 'crit4', description: 'Printf disparado dentro do if imprimindo o valor do elemento do vetor correspondente', importance: 'essencial' },
-    { id: 'crit5', description: 'Ausência de estouro de tamanho de limite nas varreduras iteradas', importance: 'essencial' }
+    { id: 'crit5', description: 'Controle do caso sem resultados imprimindo "Nenhum"', importance: 'essencial' },
+    { id: 'crit6', description: 'Ausência de estouro de tamanho de limite nas varreduras iteradas', importance: 'essencial' }
   ],
 
   probableErrors: [
     { id: 'err1', description: 'Exibição inadequada do índice no lugar do conteúdo', likelyCause: 'Chamar printf do iterador i em vez de vetor[i]' },
     { id: 'err2', description: 'Inclusão imprecisa de constantes limítrofes', likelyCause: 'Confundir maior estrito com maior descritivo usando >= no teste if' },
-    { id: 'err3', description: 'Estouro de faixas de arranjos', likelyCause: 'Programar o laço limitando a condição por <= 8' }
+    { id: 'err3', description: 'Estouro de faixas de arranjos', likelyCause: 'Programar o laço limitando a condição por <= 8' },
+    { id: 'err4', description: 'Ausência de saída quando nenhum valor é maior que 10', likelyCause: 'Não manter um sinalizador ou contador para detectar se o filtro encontrou algum elemento' }
   ],
 
   templateCode: `#include <stdio.h>\n\nint main() {\n    // Seu código aqui\n    \n    return 0;\n}`,
@@ -161,6 +173,7 @@ int main() {
       arrayDeclaration: /int\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\[\s*8\s*\]/.test(codeLower),
       filterGreater: />\s*10\b/.test(codeLower),
       printVetor: /print[\s\S]*?\[\s*[a-zA-Z0-9_]+\s*\]/.test(codeLower),
+      printsNenhum: /nenhum/.test(codeLower),
       scanf: /scanf\s*\(/.test(codeLower)
     };
 
@@ -185,8 +198,11 @@ int main() {
 
     if (checks.printVetor) { score++; }
 
+    if (checks.printsNenhum) { good.push("Tratamento do caso sem números maiores que 10 identificado."); score++; }
+    else { review.push("Inclua a saída 'Nenhum' quando nenhum elemento do vetor for maior que 10."); }
+
     let category: AnalysisResult['category'] = 'tentativa inicial';
-    if (score >= 9) category = 'solução adequada';
+    if (score >= 10) category = 'solução adequada';
     else if (score >= 6) category = 'quase completa';
     else if (score >= 3) category = 'parcialmente correta';
 
@@ -194,10 +210,11 @@ int main() {
     if (!checks.arrayDeclaration) difficulty = "Sem declaração de vetor int de tamanho 8";
     else if (!checks.loops) difficulty = "Sem laço indexador";
     else if (!checks.filterGreater) difficulty = "Sem teste de elementos maiores que 10";
+    else if (!checks.printsNenhum) difficulty = "Sem tratamento do caso sem números maiores que 10";
 
     let nextStep = "Comece com int vetor[8]; e use um laço 'for' de zero a sete preenchendo o array.";
     if (category === 'parcialmente correta') nextStep = "Adicione um if comparador verificando se o elemento do vetor focado 'vetor[i]' passa de 10.";
-    if (category === 'quase completa') nextStep = "Ponha o printf no bloco do if para mostrar os valores filtrados em cada passo.";
+    if (category === 'quase completa') nextStep = "Ponha o printf no bloco do if e trate a saída 'Nenhum' caso o filtro não encontre valores.";
     if (category === 'solução adequada') nextStep = "Trabalho formidável! Dominou com competência os filtros relacionais de vetores.";
 
     return createLocalAnalysisResult(
@@ -207,7 +224,7 @@ int main() {
       nextStep,
       difficulty,
       checks.loops ? ['logica'] : ['sintaxe_aparente'],
-      `Análise Heurística de Filtro de Array: ${score}/10 pontos.`
+      `Análise Heurística de Filtro de Array: ${score}/11 pontos.`
     );
   }
 };

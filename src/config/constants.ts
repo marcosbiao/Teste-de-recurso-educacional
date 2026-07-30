@@ -1,52 +1,29 @@
+import { ANALYSIS_LIMITS } from '../domain/analysis/analysisLimits';
+import { ANALYSIS_CATEGORIES, ANALYSIS_CONFIDENCES, ANALYSIS_ERROR_TYPES, ANALYSIS_MODES as CANONICAL_ANALYSIS_MODES } from '../domain/analysis/analysisTypes';
+
 /**
  * Constantes globais do sistema para evitar valores mágicos.
  */
 export const APP_CONSTANTS = {
-  // Limites técnicos
-  MAX_CODE_LENGTH: 50000,
+  MAX_CODE_LENGTH: ANALYSIS_LIMITS.maxCodeLength,
   MIN_SUBSTANTIAL_CODE_LENGTH: 10,
   ANALYSIS_COOLDOWN_MS: 10000,
 
-  // Nomes de coleções do Firestore
   COLLECTIONS: {
     ATTEMPTS: 'attempts',
+    CHALLENGE_PROGRESS: 'challengeProgress',
     SESSIONS: 'sessions',
     EVENTS: 'events',
     USER_PROFILES: 'users',
   },
 
-  // Categorias de análise permitidas
-  ANALYSIS_CATEGORIES: {
-    INITIAL: 'tentativa inicial',
-    PARTIAL: 'parcialmente correta',
-    ALMOST: 'quase completa',
-    ADEQUATE: 'solução adequada'
-  } as const,
+  ANALYSIS_CATEGORIES: { INITIAL: ANALYSIS_CATEGORIES[0], PARTIAL: ANALYSIS_CATEGORIES[1], ALMOST: ANALYSIS_CATEGORIES[2], ADEQUATE: ANALYSIS_CATEGORIES[3] } as const,
 
-  // Níveis de confiança da análise
-  CONFIDENCE_LEVELS: {
-    LOW: 'baixa',
-    MEDIUM: 'media',
-    HIGH: 'alta'
-  } as const,
+  CONFIDENCE_LEVELS: { LOW: ANALYSIS_CONFIDENCES[0], MEDIUM: ANALYSIS_CONFIDENCES[1], HIGH: ANALYSIS_CONFIDENCES[2] } as const,
 
-  // Tipos de erro pedagógico
-  ERROR_TYPES: [
-    'interpretacao_enunciado',
-    'logica',
-    'sintaxe_aparente',
-    'saida_incorreta',
-    'caso_nao_tratado',
-    'condicao_incompleta',
-    'sem_erro_relevante'
-  ] as const,
+  ERROR_TYPES: ANALYSIS_ERROR_TYPES,
 
-  // Modos de análise
-  ANALYSIS_MODES: {
-    PRIMARY: 'gemini_primary',
-    FALLBACK: 'gemini_fallback'
-  } as const,
+  ANALYSIS_MODES: { PRIMARY: CANONICAL_ANALYSIS_MODES[0], SECONDARY: CANONICAL_ANALYSIS_MODES[1], LOCAL_FALLBACK: CANONICAL_ANALYSIS_MODES[2], LEGACY_FALLBACK: CANONICAL_ANALYSIS_MODES[3], UNKNOWN: CANONICAL_ANALYSIS_MODES[4] } as const,
 
-  // Versões de prompt
-  PROMPT_VERSION: '2.0.0',
+  PROMPT_VERSION: '3.1.0',
 };
